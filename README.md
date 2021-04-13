@@ -17,7 +17,7 @@ If a message exceeded the MTU, it would be need to be split up into several
 frames. Due to error-prone networks, a checksum is included and can be
 used by the receiver to check if any errors occured over the network
 
-Note - Code quality is not taken into consideration, only code output.
+Note - Code quality is not taken into consideration, only code output.\
 *Sender Grade 100/100*
 
 # Receiver
@@ -25,5 +25,5 @@ The receiver will check need to check if any errors have occured over the networ
 If any errors occur simply return an error and exit the program.
 
 Note - Not on Github yet, because marks have not been received and want to avoid
-plagiarism.
+plagiarism.\
 *Sender Grade - Awaiting marks record*
