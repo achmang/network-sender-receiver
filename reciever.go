@@ -11,18 +11,16 @@ import (
 )
 
 func main() {
-
 	decodedMsg := strings.Builder{}
 	mtu := setScriptVariables()
-
-	for {
-		reader := bufio.NewReader(os.Stdin)
-		// fmt.Print("Enter text: ")
-		frame, _ := reader.ReadString('\n')
-		frame = strings.Replace(frame, "\n", "", -1)
-
-		println(frame)
-
+	reader := bufio.NewScanner(os.Stdin)
+	//This way of reading input it was better and readable.
+	for reader.Scan() {
+		frame := reader.Text()
+		
+		// bool logic here works but reads weirdly, should probably flip bool values.
+		// reading if error makes more sense.
+		// check the frame for any issues.		
 		if !errorFormat(frame) {
 			log.Fatal("Frame Formatting Error")
 		}
@@ -35,9 +33,10 @@ func main() {
 		if !errorMsgLen(frame) {
 			log.Fatal("Msg Length Error")
 		}
-
+// 		If the frame checks out, write the content of the frame to the stringbuilder
 		decodedMsg.WriteString(getFrameContent(frame))
-
+		
+// 		On receiving a final frame, terminate the program.
 		if isEndFrame(frame) {
 			println(decodedMsg.String())
 			break
@@ -45,9 +44,8 @@ func main() {
 	}
 
 }
-
+// Handle user input when running script
 func setScriptVariables() int {
-
 	mtuInput := flag.Int("mtu", 0, "Set the maximum transferable rate, mtu will be set to 30 if not specified.")
 	flag.Parse()
 
@@ -60,16 +58,15 @@ func setScriptVariables() int {
 	}
 
 	return *mtuInput
-
 }
-
+// Make sure the checksum matches. Issues with checksum can indicate errors in the frame.
 func errorCheckSum(frame string) bool {
 	if checkSum(frame[1:len(frame)-3]) == frame[len(frame)-3:len(frame)-1] {
 		return true
 	}
 	return false
 }
-
+// Make sure the MTU constrainst is met.
 func errorMtu(frame string, mtu int) bool {
 
 	if isEndFrame(frame) {
@@ -77,6 +74,7 @@ func errorMtu(frame string, mtu int) bool {
 			return true
 		}
 	} else {
+
 		if mtu > 108 && len(frame) == 109 {
 			return true
 		} else if mtu == len(frame) {
@@ -86,9 +84,8 @@ func errorMtu(frame string, mtu int) bool {
 
 	return false
 }
-
+// Make sure message length is all good
 func errorMsgLen(frame string) bool {
-
 	frameMsgLen, err := strconv.Atoi(frame[3:5])
 
 	if err != nil {
@@ -99,9 +96,9 @@ func errorMsgLen(frame string) bool {
 	}
 	return false
 }
-
+// Frame may be malformed.
+// Regex can work here but I think this is quicker?
 func errorFormat(frame string) bool {
-
 	if frame[:1] != "[" && frame[len(frame)-1:] != "]" {
 		return false
 	}
@@ -116,27 +113,22 @@ func errorFormat(frame string) bool {
 	}
 
 	if frame[len(frame)-4:len(frame)-3] != "~" {
-		println("4th")
 		return false
 	}
 	return true
 }
-
-// func errorCheckFrame(frame string, mtu int) bool {
-
-// }
-
+// Check whether frame is a delimeter or endframe
 func isEndFrame(frame string) bool {
 	if frame[1:2] == "F" {
 		return true
 	}
 	return false
 }
-
+// returns the core content of the frame.
 func getFrameContent(frame string) string {
 	return frame[6 : len(frame)-4]
 }
-
+// Calculate a checksum of given frame
 func checkSum(frame string) string {
 	total := 0
 
